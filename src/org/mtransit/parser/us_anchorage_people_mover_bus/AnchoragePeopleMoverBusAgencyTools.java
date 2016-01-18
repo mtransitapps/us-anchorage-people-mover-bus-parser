@@ -258,7 +258,7 @@ public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 		tripHeadsign = CleanUtils.cleanSlashes(tripHeadsign);
 		tripHeadsign = CleanUtils.cleanNumbers(tripHeadsign);
 		tripHeadsign = CleanUtils.cleanStreetTypes(tripHeadsign);
-		return CleanUtils.cleanLabelFR(tripHeadsign);
+		return CleanUtils.cleanLabel(tripHeadsign);
 	}
 
 	private static final Pattern ENDS_WITH_BOUNDS = Pattern
@@ -277,6 +277,6 @@ public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 		gStopName = CleanUtils.cleanSlashes(gStopName);
 		gStopName = CleanUtils.removePoints(gStopName);
 		gStopName = CleanUtils.cleanStreetTypes(gStopName);
-		return CleanUtils.cleanLabelFR(gStopName);
+		return CleanUtils.cleanLabel(gStopName);
 	}
 }
