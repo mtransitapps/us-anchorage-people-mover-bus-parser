@@ -78,6 +78,11 @@ public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 	}
 
 	@Override
+	public boolean excludeRoute(GRoute gRoute) {
+		return super.excludeRoute(gRoute);
+	}
+
+	@Override
 	public Integer getAgencyRouteType() {
 		return MAgency.ROUTE_TYPE_BUS;
 	}
@@ -122,7 +127,6 @@ public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 				int rsn = Integer.parseInt(gRoute.getRouteId());
 				switch (rsn) {
 				// @formatter:off
-				case 102: return "064A72";
 				// @formatter:on
 				}
 			}
@@ -133,25 +137,66 @@ public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 		return super.getRouteColor(gRoute);
 	}
 
-	private static final String ANMC = "ANMC";
-	private static final String DIMOND_CENTER = "Dimond Ctr";
-	private static final String DOWNTOWN = "Downtown";
-	private static final String MULDOON = "Muldoon";
-	private static final String PETERS_CREEK = "Peters Crk";
-	private static final String RICHARDSON_VISTA = "Richardson Vista";
-	private static final String VA_CLINIC = "VA Clinic";
-	private static final String CENTENNIAL_VILLAGE = "Centennial Vlg";
-
 	private static HashMap<Long, RouteTripSpec> ALL_ROUTE_TRIPS2;
 	static {
 		HashMap<Long, RouteTripSpec> map2 = new HashMap<Long, RouteTripSpec>();
-		map2.put(14l, new RouteTripSpec(14l, //
-				MDirectionType.EAST.intValue(), MTrip.HEADSIGN_TYPE_STRING, RICHARDSON_VISTA, //
-				MDirectionType.WEST.intValue(), MTrip.HEADSIGN_TYPE_STRING, DOWNTOWN) //
+		map2.put(11L, new RouteTripSpec(11L, //
+				MDirectionType.NORTH.intValue(), MTrip.HEADSIGN_TYPE_STRING, "Gov't Hl", //
+				MDirectionType.SOUTH.intValue(), MTrip.HEADSIGN_TYPE_STRING, "Fairview") //
+				.addTripSort(MDirectionType.NORTH.intValue(), //
+						Arrays.asList(new String[] { //
+						"2195", // 19TH AVENUE & CHUGACH MANOR #Fairview
+								"0525", // ++
+								"3527", // !=
+								"1450", // <> CITY HALL
+								"0002", // <>
+								"1253", // !=
+								"0856", // ++
+								"0857", // RICHARDSON VISTA & BLDG 12 WEST #GovtHl
+						})) //
+				.addTripSort(MDirectionType.SOUTH.intValue(), //
+						Arrays.asList(new String[] { //
+						"0857", // RICHARDSON VISTA & BLDG 12 WEST #GovtHl
+								"0858", // ++
+								"0861", // !=
+								"1450", // <> CITY HALL
+								"0002", // <>
+								"0734", // !=
+								"0524", // ++
+								"2195", // 19TH AVENUE & CHUGACH MANOR #Fairview
+						})) //
+				.compileBothTripSort());
+		map2.put(21L, new RouteTripSpec(21L, //
+				MDirectionType.EAST.intValue(), MTrip.HEADSIGN_TYPE_STRING, "Mtn Vw", //
+				MDirectionType.WEST.intValue(), MTrip.HEADSIGN_TYPE_STRING, "City Hall") //
 				.addTripSort(MDirectionType.EAST.intValue(), //
-						Arrays.asList(new String[] { "2051", "0853", "0857" })) //
+						Arrays.asList(new String[] { //
+						"1450", // CITY HALL
+								"7013", // ++
+								"1335", // PARSONS & LANE WNW
+						})) //
 				.addTripSort(MDirectionType.WEST.intValue(), //
-						Arrays.asList(new String[] { "0857", "0862", "2051" })) //
+						Arrays.asList(new String[] { //
+						"1335", // PARSONS & LANE WNW
+								"1339", // ++
+								"1450", // CITY HALL
+						})) //
+				.compileBothTripSort());
+		map2.put(91L, new RouteTripSpec(91L, //
+				MDirectionType.NORTH.intValue(), MTrip.HEADSIGN_TYPE_STRING, "Dimond Ctr", //
+				MDirectionType.SOUTH.intValue(), MTrip.HEADSIGN_TYPE_STRING, "Huffman Business Pk") //
+				.addTripSort(MDirectionType.NORTH.intValue(), //
+						Arrays.asList(new String[] { //
+						"1017", // HUFFMAN BUSINESS PARK
+								"1557", // ++
+								"0057", // DIMOND TRANSIT CENTER
+						})) //
+				.addTripSort(MDirectionType.SOUTH.intValue(), //
+						Arrays.asList(new String[] { //
+						"0057", // DIMOND TRANSIT CENTER
+								"1574", // ++
+								"1017", // HUFFMAN BUSINESS PARK
+						})) //
 				.compileBothTripSort());
 		ALL_ROUTE_TRIPS2 = map2;
 	}
@@ -185,60 +230,11 @@ public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 		if (ALL_ROUTE_TRIPS2.containsKey(mRoute.getId())) {
 			return; // split
 		}
-		String tripHeadsign = gTrip.getTripHeadsign();
-		if (mRoute.getId() == 13l) {
-			if ("Senior Center/Muldoon".equalsIgnoreCase(tripHeadsign)) {
-				tripHeadsign = MULDOON;
-			} else if ("Senior Center/Downtown".equalsIgnoreCase(tripHeadsign)) {
-				tripHeadsign = DOWNTOWN;
-			}
-		} else if (mRoute.getId() == 45l) {
-			if ("Tudor Center/ANMC".equalsIgnoreCase(tripHeadsign)) {
-				tripHeadsign = ANMC;
-			}
-		} else if (mRoute.getId() == 75l) {
-			if ("Muldoon/VA Clinic".equalsIgnoreCase(tripHeadsign)) {
-				tripHeadsign = VA_CLINIC;
-			}
-		} else if (mRoute.getId() == 102l) {
-			if ("Downtown/Peters Creek".equalsIgnoreCase(tripHeadsign)) {
-				tripHeadsign = PETERS_CREEK;
-			} else if ("Downtown/UAA/ANMC".equalsIgnoreCase(tripHeadsign)) {
-				tripHeadsign = ANMC;
-			}
-		}
-		mTrip.setHeadsignString(cleanTripHeadsign(tripHeadsign), gTrip.getDirectionId());
+		mTrip.setHeadsignString(cleanTripHeadsign(gTrip.getTripHeadsign()), gTrip.getDirectionId());
 	}
 
 	@Override
 	public boolean mergeHeadsign(MTrip mTrip, MTrip mTripToMerge) {
-		if (mTrip.getRouteId() == 3l) {
-			if (mTrip.getHeadsignId() == 0) {
-				mTrip.setHeadsignString(CENTENNIAL_VILLAGE, mTrip.getHeadsignId());
-				return true;
-			} else if (mTrip.getHeadsignId() == 1) {
-				mTrip.setHeadsignString(DOWNTOWN, mTrip.getHeadsignId());
-				return true;
-			}
-		} else if (mTrip.getRouteId() == 7l) {
-			if (mTrip.getHeadsignId() == 0) {
-				mTrip.setHeadsignString(DIMOND_CENTER, mTrip.getHeadsignId());
-				return true;
-			} else if (mTrip.getHeadsignId() == 1) {
-				mTrip.setHeadsignString(DOWNTOWN, mTrip.getHeadsignId());
-				return true;
-			}
-		} else if (mTrip.getRouteId() == 75l) {
-			if (mTrip.getHeadsignId() == 0) {
-				mTrip.setHeadsignString(VA_CLINIC, mTrip.getHeadsignId());
-				return true;
-			}
-		} else if (mTrip.getRouteId() == 102l) {
-			if (mTrip.getHeadsignId() == 0) {
-				mTrip.setHeadsignString(PETERS_CREEK, mTrip.getHeadsignId());
-				return true;
-			}
-		}
 		System.out.printf("\nUnexpected trips to merge: %s & %s!\n", mTrip, mTripToMerge);
 		System.exit(-1);
 		return false;
@@ -270,7 +266,9 @@ public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public String cleanStopName(String gStopName) {
-		gStopName = gStopName.toLowerCase(Locale.ENGLISH);
+		if (Utils.isUppercaseOnly(gStopName, true, true)) {
+			gStopName = gStopName.toLowerCase(Locale.ENGLISH);
+		}
 		gStopName = ENDS_WITH_BOUNDS.matcher(gStopName).replaceAll(ENDS_WITH_BOUNDS_REPLACEMENT);
 		gStopName = AVENUE.matcher(gStopName).replaceAll(AVENUE_REPLACEMENT);
 		gStopName = CleanUtils.SAINT.matcher(gStopName).replaceAll(CleanUtils.SAINT_REPLACEMENT);
