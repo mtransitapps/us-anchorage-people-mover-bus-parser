@@ -28,7 +28,7 @@ import org.mtransit.parser.mt.data.MRoute;
 import org.mtransit.parser.mt.data.MTrip;
 import org.mtransit.parser.mt.data.MTripStop;
 
-// http://www.muni.org/Departments/transit/PeopleMover/Pages/GTFSDiscliamer.aspx
+// https://www.muni.org/Departments/transit/PeopleMover/Pages/GTFSDiscliamer.aspx
 // http://gtfs.muni.org/People_Mover.gtfs.zip
 public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 
@@ -166,6 +166,22 @@ public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 								"2195", // 19TH AVENUE & CHUGACH MANOR #Fairview
 						})) //
 				.compileBothTripSort());
+		map2.put(20L, new RouteTripSpec(20L, //
+				0, MTrip.HEADSIGN_TYPE_STRING, "AK Native Medical Ctr", // ANMC
+				1, MTrip.HEADSIGN_TYPE_STRING, "Downtown") //
+				.addTripSort(0, //
+						Arrays.asList(new String[] { //
+						"2051", // DOWNTOWN TRANSIT CENTER
+								"1289", // ++
+								"3010", // DIPLOMACY & ANMC N
+						})) //
+				.addTripSort(1, //
+						Arrays.asList(new String[] { //
+						"3010", // DIPLOMACY & ANMC N
+								"1342", // ++
+								"2051", // DOWNTOWN TRANSIT CENTER
+						})) //
+				.compileBothTripSort());
 		map2.put(21L, new RouteTripSpec(21L, //
 				MDirectionType.EAST.intValue(), MTrip.HEADSIGN_TYPE_STRING, "Mtn Vw", //
 				MDirectionType.WEST.intValue(), MTrip.HEADSIGN_TYPE_STRING, "City Hall") //
@@ -204,7 +220,7 @@ public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 	@Override
 	public int compareEarly(long routeId, List<MTripStop> list1, List<MTripStop> list2, MTripStop ts1, MTripStop ts2, GStop ts1GStop, GStop ts2GStop) {
 		if (ALL_ROUTE_TRIPS2.containsKey(routeId)) {
-			return ALL_ROUTE_TRIPS2.get(routeId).compare(routeId, list1, list2, ts1, ts2, ts1GStop, ts2GStop);
+			return ALL_ROUTE_TRIPS2.get(routeId).compare(routeId, list1, list2, ts1, ts2, ts1GStop, ts2GStop, this);
 		}
 		return super.compareEarly(routeId, list1, list2, ts1, ts2, ts1GStop, ts2GStop);
 	}
@@ -220,7 +236,7 @@ public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 	@Override
 	public Pair<Long[], Integer[]> splitTripStop(MRoute mRoute, GTrip gTrip, GTripStop gTripStop, ArrayList<MTrip> splitTrips, GSpec routeGTFS) {
 		if (ALL_ROUTE_TRIPS2.containsKey(mRoute.getId())) {
-			return SplitUtils.splitTripStop(mRoute, gTrip, gTripStop, routeGTFS, ALL_ROUTE_TRIPS2.get(mRoute.getId()));
+			return SplitUtils.splitTripStop(mRoute, gTrip, gTripStop, routeGTFS, ALL_ROUTE_TRIPS2.get(mRoute.getId()), this);
 		}
 		return super.splitTripStop(mRoute, gTrip, gTripStop, splitTrips, routeGTFS);
 	}
