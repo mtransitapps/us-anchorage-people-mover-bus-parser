@@ -184,18 +184,18 @@ public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 				.compileBothTripSort());
 		map2.put(21L, new RouteTripSpec(21L, //
 				MDirectionType.EAST.intValue(), MTrip.HEADSIGN_TYPE_STRING, "Mtn Vw", //
-				MDirectionType.WEST.intValue(), MTrip.HEADSIGN_TYPE_STRING, "City Hall") //
+				MDirectionType.WEST.intValue(), MTrip.HEADSIGN_TYPE_STRING, "Northway Mall") //
 				.addTripSort(MDirectionType.EAST.intValue(), //
 						Arrays.asList(new String[] { //
-						"1450", // CITY HALL
-								"7013", // ++
+						"0514", // PENLAND PKWY & PAUL LALONE N
+								"7032", // ++
 								"1335", // PARSONS & LANE WNW
 						})) //
 				.addTripSort(MDirectionType.WEST.intValue(), //
 						Arrays.asList(new String[] { //
 						"1335", // PARSONS & LANE WNW
 								"1339", // ++
-								"1450", // CITY HALL
+								"0514", // PENLAND PKWY & PAUL LALONE N
 						})) //
 				.compileBothTripSort());
 		map2.put(91L, new RouteTripSpec(91L, //
