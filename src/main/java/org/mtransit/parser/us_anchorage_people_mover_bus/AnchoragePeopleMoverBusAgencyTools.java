@@ -93,12 +93,15 @@ public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 		return MAgency.ROUTE_TYPE_BUS;
 	}
 
-	private static final long ERC_RID = 1001l;
+	private static final long ERC_RID = 1001L;
 
 	private static final String RID_ERC = "ERC";
 
 	@Override
 	public long getRouteId(GRoute gRoute) {
+		if (Utils.isDigitsOnly(gRoute.getRouteShortName())) {
+			return Long.parseLong(gRoute.getRouteShortName());
+		}
 		if (RID_ERC.equalsIgnoreCase(gRoute.getRouteId())) {
 			return ERC_RID;
 		}
@@ -223,6 +226,14 @@ public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 		ALL_ROUTE_TRIPS2 = map2;
 	}
 
+	private static final Pattern STARTS_WITH_PM_ = Pattern.compile("(^PM)", Pattern.CASE_INSENSITIVE);
+
+	@Override
+	public String cleanStopOriginalId(String gStopId) {
+		gStopId = STARTS_WITH_PM_.matcher(gStopId).replaceAll(StringUtils.EMPTY);
+		return gStopId;
+	}
+
 	@Override
 	public int compareEarly(long routeId, List<MTripStop> list1, List<MTripStop> list2, MTripStop ts1, MTripStop ts2, GStop ts1GStop, GStop ts2GStop) {
 		if (ALL_ROUTE_TRIPS2.containsKey(routeId)) {
@@ -298,5 +309,10 @@ public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 		gStopName = CleanUtils.removePoints(gStopName);
 		gStopName = CleanUtils.cleanStreetTypes(gStopName);
 		return CleanUtils.cleanLabel(gStopName);
+	}
+
+	@Override
+	public int getStopId(GStop gStop) {
+		return Integer.parseInt(gStop.getStopCode()); // use stop code as stop ID
 	}
 }
