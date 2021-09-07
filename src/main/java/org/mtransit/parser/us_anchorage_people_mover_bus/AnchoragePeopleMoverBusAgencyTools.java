@@ -29,60 +29,18 @@ import static org.mtransit.commons.StringUtils.EMPTY;
 // http://gtfs.muni.org/People_Mover.gtfs.zip
 public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 
-	public static void main(@Nullable String[] args) {
-		if (args == null || args.length == 0) {
-			args = new String[3];
-			args[0] = "input/gtfs.zip";
-			args[1] = "../../mtransitapps/us-anchorage-people-mover-bus-android/res/raw/";
-			args[2] = ""; // files-prefix
-		}
+	public static void main(@NotNull String[] args) {
 		new AnchoragePeopleMoverBusAgencyTools().start(args);
 	}
 
-	@Nullable
-	private HashSet<Integer> serviceIdInts;
-
 	@Override
-	public void start(@NotNull String[] args) {
-		MTLog.log("Generating People Mover bus data...");
-		long start = System.currentTimeMillis();
-		this.serviceIdInts = extractUsefulServiceIdInts(args, this, true);
-		super.start(args);
-		MTLog.log("Generating People Mover bus data... DONE in %s.", Utils.getPrettyDuration(System.currentTimeMillis() - start));
+	public boolean defaultExcludeEnabled() {
+		return true;
 	}
 
-	@Override
-	public boolean excludingAll() {
-		return this.serviceIdInts != null && this.serviceIdInts.isEmpty();
-	}
-
-	@Override
-	public boolean excludeCalendar(@NotNull GCalendar gCalendar) {
-		if (this.serviceIdInts != null) {
-			return excludeUselessCalendarInt(gCalendar, this.serviceIdInts);
-		}
-		return super.excludeCalendar(gCalendar);
-	}
-
-	@Override
-	public boolean excludeCalendarDate(@NotNull GCalendarDate gCalendarDates) {
-		if (this.serviceIdInts != null) {
-			return excludeUselessCalendarDateInt(gCalendarDates, this.serviceIdInts);
-		}
-		return super.excludeCalendarDate(gCalendarDates);
-	}
-
-	@Override
-	public boolean excludeTrip(@NotNull GTrip gTrip) {
-		if (this.serviceIdInts != null) {
-			return excludeUselessTripInt(gTrip, this.serviceIdInts);
-		}
-		return super.excludeTrip(gTrip);
-	}
-
-	@Override
-	public boolean excludeRoute(@NotNull GRoute gRoute) {
-		return super.excludeRoute(gRoute);
+	@NotNull
+	public String getAgencyName() {
+		return "People Mover";
 	}
 
 	@NotNull
@@ -109,12 +67,7 @@ public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 
 	@NotNull
 	@Override
-	public String getRouteLongName(@NotNull GRoute gRoute) {
-		return cleanRouteLongName(gRoute);
-	}
-
-	private String cleanRouteLongName(@NotNull GRoute gRoute) {
-		String routeLongName = gRoute.getRouteLongNameOrDefault();
+	public String cleanRouteLongName(@NotNull String routeLongName) {
 		routeLongName = CleanUtils.toLowerCaseUpperCaseWords(Locale.ENGLISH, routeLongName, getIgnoredWords());
 		routeLongName = CleanUtils.cleanSlashes(routeLongName);
 		return CleanUtils.cleanLabel(routeLongName);
@@ -128,6 +81,11 @@ public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 	@Override
 	public String getAgencyColor() {
 		return AGENCY_COLOR;
+	}
+
+	@Override
+	public boolean defaultAgencyColorEnabled() {
+		return true;
 	}
 
 	@Nullable
