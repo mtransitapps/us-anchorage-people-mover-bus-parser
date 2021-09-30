@@ -1,29 +1,19 @@
 package org.mtransit.parser.us_anchorage_people_mover_bus;
 
+import static org.mtransit.commons.StringUtils.EMPTY;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.mtransit.commons.CharUtils;
 import org.mtransit.commons.CleanUtils;
 import org.mtransit.commons.StringUtils;
 import org.mtransit.parser.ColorUtils;
 import org.mtransit.parser.DefaultAgencyTools;
-import org.mtransit.parser.MTLog;
-import org.mtransit.parser.Utils;
-import org.mtransit.parser.gtfs.data.GCalendar;
-import org.mtransit.parser.gtfs.data.GCalendarDate;
-import org.mtransit.parser.gtfs.data.GRoute;
-import org.mtransit.parser.gtfs.data.GSpec;
 import org.mtransit.parser.gtfs.data.GStop;
-import org.mtransit.parser.gtfs.data.GTrip;
 import org.mtransit.parser.mt.data.MAgency;
-import org.mtransit.parser.mt.data.MRoute;
-import org.mtransit.parser.mt.data.MTrip;
 
-import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
-
-import static org.mtransit.commons.StringUtils.EMPTY;
 
 // https://www.muni.org/Departments/transit/PeopleMover/Pages/GTFSDiscliamer.aspx
 // http://gtfs.muni.org/People_Mover.gtfs.zip
@@ -31,6 +21,12 @@ public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 
 	public static void main(@NotNull String[] args) {
 		new AnchoragePeopleMoverBusAgencyTools().start(args);
+	}
+
+	@Nullable
+	@Override
+	public List<Locale> getSupportedLanguages() {
+		return LANG_EN;
 	}
 
 	@Override
@@ -49,26 +45,35 @@ public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 		return MAgency.ROUTE_TYPE_BUS;
 	}
 
-	private static final long ERC_RID = 1001L;
-
-	private static final String RID_ERC = "ERC";
+	@Override
+	public boolean defaultRouteIdEnabled() {
+		return true;
+	}
 
 	@Override
-	public long getRouteId(@NotNull GRoute gRoute) {
-		if (CharUtils.isDigitsOnly(gRoute.getRouteShortName())) {
-			return Long.parseLong(gRoute.getRouteShortName());
+	public boolean useRouteShortNameForRouteId() {
+		return true;
+	}
+
+	@Nullable
+	@Override
+	public Long convertRouteIdFromShortNameNotSupported(@NotNull String routeShortName) {
+		switch (routeShortName) {
+		case "ERC":
+			return 1001L;
 		}
-		//noinspection deprecation
-		if (RID_ERC.equalsIgnoreCase(gRoute.getRouteId())) {
-			return ERC_RID;
-		}
-		return super.getRouteId(gRoute);
+		return super.convertRouteIdFromShortNameNotSupported(routeShortName);
+	}
+
+	@Override
+	public boolean defaultRouteLongNameEnabled() {
+		return true;
 	}
 
 	@NotNull
 	@Override
 	public String cleanRouteLongName(@NotNull String routeLongName) {
-		routeLongName = CleanUtils.toLowerCaseUpperCaseWords(Locale.ENGLISH, routeLongName, getIgnoredWords());
+		routeLongName = CleanUtils.toLowerCaseUpperCaseWords(getFirstLanguageNN(), routeLongName, getIgnoredWords());
 		routeLongName = CleanUtils.cleanSlashes(routeLongName);
 		return CleanUtils.cleanLabel(routeLongName);
 	}
@@ -90,21 +95,11 @@ public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 
 	@Nullable
 	@Override
-	public String getRouteColor(@NotNull GRoute gRoute) {
-		if (StringUtils.isEmpty(gRoute.getRouteColor())
-				|| ColorUtils.WHITE.equalsIgnoreCase(gRoute.getRouteColor())) {
-			//noinspection deprecation
-			final String routeId = gRoute.getRouteId();
-			if (CharUtils.isDigitsOnly(routeId)) {
-				int rsn = Integer.parseInt(routeId);
-				switch (rsn) {
-				// @formatter:off
-				// @formatter:on
-				}
-			}
-			throw new MTLog.Fatal("Unexpected route color %s!", gRoute);
+	public String fixColor(@Nullable String color) {
+		if (ColorUtils.WHITE.equalsIgnoreCase(color)) {
+			return null;
 		}
-		return super.getRouteColor(gRoute);
+		return super.fixColor(color);
 	}
 
 	private static final Pattern STARTS_WITH_PM_ = Pattern.compile("(^PM)", Pattern.CASE_INSENSITIVE);
@@ -114,14 +109,6 @@ public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 	public String cleanStopOriginalId(@NotNull String gStopId) {
 		gStopId = STARTS_WITH_PM_.matcher(gStopId).replaceAll(StringUtils.EMPTY);
 		return gStopId;
-	}
-
-	@Override
-	public void setTripHeadsign(@NotNull MRoute mRoute, @NotNull MTrip mTrip, @NotNull GTrip gTrip, @NotNull GSpec gtfs) {
-		mTrip.setHeadsignString(
-				cleanTripHeadsign(gTrip.getTripHeadsignOrDefault()),
-				gTrip.getDirectionIdOrDefault()
-		);
 	}
 
 	@Override
@@ -143,11 +130,6 @@ public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 			directionHeadSign = INBOUND_OUTBOUND_.matcher(directionHeadSign).replaceAll(EMPTY); // force last/first stop
 		}
 		return directionHeadSign;
-	}
-
-	@Override
-	public boolean mergeHeadsign(@NotNull MTrip mTrip, @NotNull MTrip mTripToMerge) {
-		throw new MTLog.Fatal("Unexpected trips to merge: %s & %s!", mTrip, mTripToMerge);
 	}
 
 	private static final Pattern LETTER_DASH_ELSE = Pattern.compile("(^([A-Z])( -)(.*))", Pattern.CASE_INSENSITIVE);
@@ -176,7 +158,7 @@ public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 	@NotNull
 	@Override
 	public String cleanStopName(@NotNull String gStopName) {
-		gStopName = CleanUtils.toLowerCaseUpperCaseWords(Locale.ENGLISH, gStopName, getIgnoredWords());
+		gStopName = CleanUtils.toLowerCaseUpperCaseWords(getFirstLanguageNN(), gStopName, getIgnoredWords());
 		gStopName = CleanUtils.SAINT.matcher(gStopName).replaceAll(CleanUtils.SAINT_REPLACEMENT);
 		gStopName = CleanUtils.cleanSlashes(gStopName);
 		gStopName = CleanUtils.cleanStreetTypes(gStopName);
