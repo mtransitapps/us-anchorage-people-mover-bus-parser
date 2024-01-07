@@ -5,6 +5,7 @@ import static org.mtransit.commons.StringUtils.EMPTY;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.mtransit.commons.CleanUtils;
+import org.mtransit.commons.Cleaner;
 import org.mtransit.commons.StringUtils;
 import org.mtransit.parser.ColorUtils;
 import org.mtransit.parser.DefaultAgencyTools;
@@ -16,7 +17,6 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 
 // https://www.muni.org/Departments/transit/PeopleMover/Pages/GTFSDiscliamer.aspx
-// http://gtfs.muni.org/People_Mover.gtfs.zip
 public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 
 	public static void main(@NotNull String[] args) {
@@ -122,8 +122,8 @@ public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 
 	@NotNull
 	@Override
-	public String cleanDirectionHeadsign(boolean fromStopName, @NotNull String directionHeadSign) {
-		directionHeadSign = super.cleanDirectionHeadsign(fromStopName, directionHeadSign);
+	public String cleanDirectionHeadsign(int directionId, boolean fromStopName, @NotNull String directionHeadSign) {
+		directionHeadSign = super.cleanDirectionHeadsign(directionId, fromStopName, directionHeadSign);
 		if (fromStopName) {
 			directionHeadSign = ENDS_WITH_BOUNDS_.matcher(directionHeadSign).replaceAll(EMPTY);
 		} else {
@@ -135,10 +135,14 @@ public class AnchoragePeopleMoverBusAgencyTools extends DefaultAgencyTools {
 	private static final Pattern LETTER_DASH_ELSE = Pattern.compile("(^([A-Z])( -)(.*))", Pattern.CASE_INSENSITIVE);
 	private static final String LETTER_DASH_ELSE_REPLACEMENT = "$2" + "$4";
 
+	private static final Cleaner THE_ = new Cleaner("^the ", EMPTY, true);
+
 	@NotNull
 	@Override
 	public String cleanTripHeadsign(@NotNull String tripHeadsign) {
 		tripHeadsign = LETTER_DASH_ELSE.matcher(tripHeadsign).replaceAll(LETTER_DASH_ELSE_REPLACEMENT);
+		tripHeadsign = CleanUtils.keepToAndRemoveVia(tripHeadsign);
+		tripHeadsign = THE_.clean(tripHeadsign);
 		tripHeadsign = CleanUtils.cleanSlashes(tripHeadsign);
 		tripHeadsign = CleanUtils.cleanNumbers(tripHeadsign);
 		tripHeadsign = CleanUtils.cleanStreetTypes(tripHeadsign);
